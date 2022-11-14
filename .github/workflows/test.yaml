@@ -1,22 +1,30 @@
-name: automated tests
-on: 
+# This is a basic workflow to help you get started with Actions
+
+name: autumated-tests
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
-    branches: [ master ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ master ]
-    
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
 jobs:
   test:
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        python-version: [3.10]
+        python-version: ["3.10"]
 
     steps:
       # Checkout the latest code from the repository
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       # Set up which version of Python to use
       - name: Set up Python ${{ matrix.python-version }}
