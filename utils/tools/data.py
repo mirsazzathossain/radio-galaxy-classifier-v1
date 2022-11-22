@@ -43,7 +43,6 @@ def get_catalog(catalog_name: str) -> pd.DataFrame:
     Returns:
         pd.DataFrame: Catalog of the astronomical objects
     """
-
     Vizier.ROW_LIMIT = -1
     catalog = Vizier.get_catalogs_async(catalog_name)[0]  # type: ignore
     catalog = catalog.to_pandas()  # type: ignore
@@ -63,7 +62,6 @@ def get_single_fits(
         declination {SkyCoord}: Declination of the object
         file_name {str}: Name of the FITS file to be saved
     """
-
     image = SkyView.get_images(
         position=str(right_ascension) + ", " + str(declination),
         survey=survey,
@@ -93,7 +91,6 @@ def get_filename(catalog: pd.DataFrame) -> str:
     Returns:
         str: Filename of the catalog
     """
-
     if {"RAJ2000", "DEJ2000"}.issubset(catalog.keys()):
         filename = str(catalog["RAJ2000"])
         filename += "+" if catalog["DEJ2000"] > 0 else ""
@@ -126,7 +123,6 @@ def get_class_code(catalog: pd.DataFrame, classes: dict, column: str) -> str:
     Returns:
         str: Class code of the catalog
     """
-
     class_code = ""
 
     for key, value in classes.items():
@@ -154,7 +150,6 @@ def get_fits_images(
         classes {dict}: Dictionary of the classes to be used
         column {str}: Column name to get the class code
     """
-
     failed = pd.DataFrame(columns=catalog.columns)
 
     for i in range(len(catalog)):
@@ -195,7 +190,6 @@ def fits_to_png(fits_path: str, im_size=None) -> Image.Image:
         png_path {str}: Path to the PNG image
         im_size {tuple}: Size of the image
     """
-
     try:
         img = fits.getdata(fits_path)
         header = fits.getheader(fits_path)
@@ -230,7 +224,6 @@ def fits_to_png_batch(fits_dir: str, save_dir: str, im_size=None) -> None:
         save_dir {str}: Path to the directory to save the PNG images
         im_size {tuple}: Size of the image
     """
-
     for file in os.listdir(fits_dir):
         if file.endswith(".fits"):
             Path(save_dir).mkdir(parents=True, exist_ok=True)
@@ -252,7 +245,6 @@ def dataframe_to_html(catalog: pd.DataFrame, save_dir: str) -> None:
         catalog {pd.DataFrame}: Catalog to save
         save_dir {str}: Path to the directory to save the HTML file
     """
-
     Path(save_dir).mkdir(parents=True, exist_ok=True)
     catalog.to_html(os.path.join(save_dir, "catalog.html"))
 
@@ -268,7 +260,6 @@ def mask_single_image(png_image: Image.Image, mask_image: Image.Image) -> Image.
     Returns:
         masked_image {PIL.Image}: Masked image
     """
-
     png_img = np.array(png_image)
     mask_img = np.array(mask_image)
 
@@ -287,7 +278,6 @@ def mask_images(png_dir: str, mask_dir: str, save_dir: str) -> None:
         mask_dir {str}: Path to the mask images directory
         save_dir {str}: Path to the directory to save the masked images
     """
-
     for file in os.listdir(mask_dir):
         if file.endswith(".png"):
             png_file = os.path.join(png_dir, file)
@@ -312,7 +302,6 @@ def get_mean_and_std(dataloader: torch.utils.data.DataLoader) -> tuple:  # type:
         mean {float}: Mean of the dataset
         std {float}: Standard deviation of the dataset
     """
-
     channels_sum, channels_squared_sum, num_batches = 0, 0, 0
     for data in dataloader:
         # Mean over batch, height and width, but not over the channels
