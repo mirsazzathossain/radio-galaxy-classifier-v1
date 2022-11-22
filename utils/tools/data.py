@@ -313,7 +313,6 @@ def get_mean_and_std(dataloader: torch.utils.data.DataLoader) -> tuple:  # type:
 
     mean = channels_sum / num_batches
 
-    # std = sqrt(E[X^2] - (E[X])^2)
     std = (channels_squared_sum / num_batches - mean**2) ** 0.5
 
     return mean, std
