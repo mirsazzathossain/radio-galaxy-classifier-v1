@@ -158,7 +158,8 @@ def get_fits_images(
 
             coordinate = SkyCoord(name, unit=(u.hourangle, u.deg))
 
-            assert coordinate.ra is not None and coordinate.dec is not None
+            if not (coordinate.ra is not None and coordinate.dec is not None):
+                raise AssertionError
             right_ascension = coordinate.ra.deg
             declination = coordinate.dec.deg
 
