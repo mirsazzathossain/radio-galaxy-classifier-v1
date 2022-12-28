@@ -27,11 +27,15 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+
+utils/bad
+utils/outputs
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
+rgc-venv/
 
 # Installer logs
 pip-log.txt
@@ -132,3 +136,4 @@ dmypy.json
 data/
 saved_models/
 results/
+trash/

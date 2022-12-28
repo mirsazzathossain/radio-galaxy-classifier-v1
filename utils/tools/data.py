@@ -44,8 +44,8 @@ def get_catalog(catalog_name: str) -> pd.DataFrame:
         pd.DataFrame: Catalog of the astronomical objects
     """
     Vizier.ROW_LIMIT = -1
-    catalog = Vizier.get_catalogs_async(catalog_name)[0]  # type: ignore
-    catalog = catalog.to_pandas()  # type: ignore
+    catalog = Vizier.get_catalogs_async(catalog_name)[0]
+    catalog = catalog.to_pandas()
 
     return catalog
 
@@ -69,12 +69,12 @@ def get_single_fits(
         pixels=(150, 150),
     )[0]
 
-    comment = str(image[0].header["comment"])  # type: ignore
+    comment = str(image[0].header["comment"])
     comment = comment.replace("\n", "")
     comment = comment.replace("\t", " ")
 
-    image[0].header.remove("comment", comment, True)  # type: ignore
-    image[0].header.add_comment(comment)  # type: ignore
+    image[0].header.remove("comment", comment, True)
+    image[0].header.add_comment(comment)
 
     folder_path = Path(file_name).parent
     Path(folder_path).mkdir(parents=True, exist_ok=True)
@@ -108,7 +108,7 @@ def get_filename(catalog: pd.DataFrame) -> str:
     else:
         raise Exception("No name found in catalog")
 
-    return filename  # type: ignore
+    return filename
 
 
 def get_class_code(catalog: pd.DataFrame, classes: dict, column: str) -> str:
@@ -154,7 +154,7 @@ def get_fits_images(
 
     for i in range(len(catalog)):
         try:
-            name = get_filename(catalog.iloc[i])  # type: ignore
+            name = get_filename(catalog.iloc[i])
 
             coordinate = SkyCoord(name, unit=(u.hourangle, u.deg))
 
@@ -164,8 +164,7 @@ def get_fits_images(
             declination = coordinate.dec.deg
 
             if classes is not None and column is not None:
-                class_code = get_class_code(
-                    catalog.iloc[i], classes, column)  # type: ignore
+                class_code = get_class_code(catalog.iloc[i], classes, column)
             else:
                 class_code = ""
 
@@ -174,9 +173,8 @@ def get_fits_images(
             else:
                 file_name = f"{save_dir}/{class_code}_{name}.fits"
 
-            get_single_fits(survey, right_ascension,
-                            declination, file_name)  # type: ignore
-        except Exception as exception:  # pylint: disable=broad-except
+            get_single_fits(survey, right_ascension, declination, file_name)
+        except Exception as exception:
             series = catalog.iloc[i].to_frame().T
             failed = pd.concat([failed, series], ignore_index=True)
             print(exception)
@@ -196,14 +194,14 @@ def fits_to_png(fits_path: str, im_size=None) -> Image.Image:
         header = fits.getheader(fits_path)
     except OSError:
         print("File not found: ", fits_path)
-        return None  # type: ignore
+        return None
 
     if im_size is not None:
         width, height = im_size
     else:
         width, height = header["NAXIS1"], header["NAXIS2"]
 
-    img = np.reshape(img, (height, width))  # type: ignore
+    img = np.reshape(img, (height, width))
 
     # replace nan with nanmin
     img[np.isnan(img)] = np.nanmin(img)
@@ -292,7 +290,7 @@ def mask_images(png_dir: str, mask_dir: str, save_dir: str) -> None:
             masked_image.save(os.path.join(save_dir, file))
 
 
-def get_mean_and_std(dataloader: torch.utils.data.DataLoader) -> tuple:  # type: ignore
+def get_mean_and_std(dataloader: torch.utils.data.DataLoader) -> tuple:
     """
     Compute the mean and standard deviation of the dataset
 
@@ -306,10 +304,8 @@ def get_mean_and_std(dataloader: torch.utils.data.DataLoader) -> tuple:  # type:
     channels_sum, channels_squared_sum, num_batches = 0, 0, 0
     for data in dataloader:
         # Mean over batch, height and width, but not over the channels
-        # pylint: disable=E1101
         channels_sum += torch.mean(data, dim=[0, 2, 3])
         channels_squared_sum += torch.mean(data**2, dim=[0, 2, 3])
-        # pylint: disable=E1101
         num_batches += 1
 
     mean = channels_sum / num_batches
