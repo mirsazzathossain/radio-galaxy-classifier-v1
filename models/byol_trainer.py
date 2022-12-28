@@ -83,7 +83,6 @@ class BYOLTrainer:
     def train(self):
         """Train function."""
 
-        self.learner.train()
         train_loader = self.train_dataloader()
         running_loss = 0.0
         best_loss = 1e10
