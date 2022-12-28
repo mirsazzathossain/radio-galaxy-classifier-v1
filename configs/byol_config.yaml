@@ -1,0 +1,17 @@
+data_params:
+  data_path: ./data/unlabeled/
+exp_params:
+  N: 16
+  batch_size: 16
+  device: cuda
+  lr: 0.0003
+  moving_average_decay: 0.99
+  num_epochs: 500
+  num_workers: 16
+  projection_hidden_size: 4096
+  projection_size: 256
+logging_params:
+  results_dir: ./results/
+model_params:
+  image_size: 151
+  kernel_size: 5
