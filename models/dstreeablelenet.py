@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+
+"""Steerable Group CNN for Image Classification."""
+
+__author__ = "Mir Sazzat Hossain"
+
 import torch
 import torch.nn as nn
 from e2cnn import gspaces
@@ -5,21 +11,23 @@ from e2cnn import nn as e2nn
 
 
 class DSteerableLeNet(nn.Module):
-    """
-    Steerable CNN for image classification.
+    """Steerable CNN for image classification."""
 
-    Functions:
-        forward: forward pass of the network
-    """
-
-    def __init__(self, imsize=151, kernel_size=5, N=16):
+    def __init__(
+        self,
+        imsize: int = 151,
+        kernel_size: int = 5,
+        N: int = 16
+    ) -> None:
         """
         Initialize the network.
 
-        Args:
-            imsize: image size
-            kernel_size: kernel size of the convolutional layers
-            N: number of filters in the convolutional layers
+        :param imsize: size of the input image
+        :type imsize: int
+        :param kernel_size: size of the convolutional kernel
+        :type kernel_size: int
+        :param N: number of rotations
+        :type N: int
         """
         super(DSteerableLeNet, self).__init__()
         self.imsize = imsize
@@ -37,7 +45,11 @@ class DSteerableLeNet(nn.Module):
         out_type = e2nn.FieldType(self.r2_act, 6 * [self.r2_act.regular_repr])
         self.mask = e2nn.MaskModule(in_type, self.imsize, margin=1)
         self.conv1 = e2nn.R2Conv(
-            in_type, out_type, kernel_size=self.kernel_size, padding=1, bias=False
+            in_type,
+            out_type,
+            kernel_size=self.kernel_size,
+            padding=1,
+            bias=False
         )
         self.relu1 = e2nn.ReLU(out_type, inplace=True)
         self.pool1 = e2nn.PointwiseMaxPoolAntialiased(out_type, kernel_size=2)
@@ -45,7 +57,11 @@ class DSteerableLeNet(nn.Module):
         in_type = self.pool1.out_type
         out_type = e2nn.FieldType(self.r2_act, 16 * [self.r2_act.regular_repr])
         self.conv2 = e2nn.R2Conv(
-            in_type, out_type, kernel_size=self.kernel_size, padding=1, bias=False
+            in_type,
+            out_type,
+            kernel_size=self.kernel_size,
+            padding=1,
+            bias=False
         )
         self.relu2 = e2nn.ReLU(out_type, inplace=True)
         self.pool2 = e2nn.PointwiseMaxPoolAntialiased(out_type, kernel_size=2)
@@ -57,12 +73,12 @@ class DSteerableLeNet(nn.Module):
         # dummy parameter for tracking device
         self.dummy = nn.Parameter(torch.empty(0))
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
         Forward pass of the network.
 
-        Args:
-            x: input data
+        :param x: input tensor
+        :type x: torch.Tensor
         """
         x = e2nn.GeometricTensor(x, self.input_type)
 
