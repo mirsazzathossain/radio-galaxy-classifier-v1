@@ -1,12 +1,14 @@
+# -*- coding: utf-8 -*-
+
 """
 Assentials tools for astronomical data processing.
 
 This module includes the tools needed to retrieve catalogs from the Vizier
 and astronomical data from the SkyView. Additionally, it includes the tools
 necessary to convert fits images to numpy arrays and then to PIL images. It
-also includes several tools for image processing and machine learning, including
-the option to use masks to mask images and use the dataloader to calculate the
-mean and standard deviation of PyTorch datasets.
+also includes several tools for image processing and machine learning,
+including the option to use masks to mask images and use the dataloader to
+calculate the mean and standard deviation of PyTorch datasets.
 
 Functions:
     get_catalog: Get the catalog of the astronomical objects
@@ -19,6 +21,9 @@ Functions:
     mask_image: Mask the image with the given mask
     get_mean_std: Get the mean and standard deviation of the dataset
 """
+
+__author__ = "Mir Sazzat Hossain"
+
 import os
 from pathlib import Path
 
@@ -35,13 +40,13 @@ from PIL import Image
 
 def get_catalog(catalog_name: str) -> pd.DataFrame:
     """
-    Get the catalog of the astronomical objects
+    Get the catalog of the astronomical objects.
 
-    Arguments:
-        catalog_name {str}: Name of the catalog as in Vizier
+    :param catalog_name: Name of the catalog to be retrieved
+    :type catalog_name: str
 
-    Returns:
-        pd.DataFrame: Catalog of the astronomical objects
+    :return: Catalog of the astronomical objects
+    :rtype: pd.DataFrame
     """
     Vizier.ROW_LIMIT = -1
     catalog = Vizier.get_catalogs_async(catalog_name)[0]
@@ -51,16 +56,22 @@ def get_catalog(catalog_name: str) -> pd.DataFrame:
 
 
 def get_single_fits(
-    survey: str, right_ascension: SkyCoord, declination: SkyCoord, file_name: str
+    survey: str,
+    right_ascension: SkyCoord,
+    declination: SkyCoord,
+    file_name: str
 ) -> None:
     """
-    Download a single FITS image from the SkyView
+    Download a single FITS image from the SkyView.
 
-    Arguments:
-        survey {str}: Name of the astronomical survey e.g. "DSS2 Red"
-        right_ascension {SkyCoord}: Right Ascension of the object
-        declination {SkyCoord}: Declination of the object
-        file_name {str}: Name of the FITS file to be saved
+    :param survey: Name of the astronomical survey e.g. "DSS2 Red"
+    :type survey: str
+    :param right_ascension: Right ascension of the astronomical object
+    :type right_ascension: SkyCoord
+    :param declination: Declination of the astronomical object
+    :type declination: SkyCoord
+    :param file_name: Path to the file to save the FITS image
+    :type file_name: str
     """
     image = SkyView.get_images(
         position=str(right_ascension) + ", " + str(declination),
@@ -83,13 +94,13 @@ def get_single_fits(
 
 def get_filename(catalog: pd.DataFrame) -> str:
     """
-    Get the filename of the catalog
+    Get the filename of the catalog.
 
-    Arguments:
-        catalog {pd.DataFrame}: Catalog of the astronomical objects
+    :param catalog: Catalog of the astronomical objects
+    :type catalog: pd.DataFrame
 
-    Returns:
-        str: Filename of the catalog
+    :return: Filename of the catalog
+    :rtype: str
     """
     if {"RAJ2000", "DEJ2000"}.issubset(catalog.keys()):
         filename = str(catalog["RAJ2000"])
@@ -113,15 +124,17 @@ def get_filename(catalog: pd.DataFrame) -> str:
 
 def get_class_code(catalog: pd.DataFrame, classes: dict, column: str) -> str:
     """
-    Get the class code of the catalog
+    Get the class code of the catalog.
 
-    Arguments:
-        catalog {pd.DataFrame}: Catalog of the astronomical objects
-        classes {dict}: Dictionary of the classes to be used
-        column {str}: Column name to get the class code
+    :param catalog: Catalog of the astronomical objects
+    :type catalog: pd.DataFrame
+    :param classes: Dictionary of the classes to be used
+    :type classes: dict
+    :param column: Column name to get the class code
+    :type column: str
 
-    Returns:
-        str: Class code of the catalog
+    :return: Class code of the catalog
+    :rtype: str
     """
     class_code = ""
 
@@ -138,17 +151,23 @@ def get_class_code(catalog: pd.DataFrame, classes: dict, column: str) -> str:
 
 
 def get_fits_images(
-    catalog: pd.DataFrame, survey: str, save_dir: str, classes=None, column=None
+    catalog: pd.DataFrame,
+    survey: str, save_dir: str,
+    classes=None, column=None
 ) -> None:
     """
-    Download the FITS images from the SkyView
+    Download the FITS images from the SkyView.
 
-    Arguments:
-        catalog {pd.DataFrame}: Catalog of the astronomical objects
-        survey {str}: Name of the astronomical survey e.g. "DSS2 Red"
-        save_dir {str}: Path to the directory to save the FITS images
-        classes {dict}: Dictionary of the classes to be used
-        column {str}: Column name to get the class code
+    :param catalog: Catalog of the astronomical objects
+    :type catalog: pd.DataFrame
+    :param survey: Name of the astronomical survey e.g. "DSS2 Red"
+    :type survey: str
+    :param save_dir: Path to the directory to save the FITS images
+    :type save_dir: str
+    :param classes: Dictionary of the classes to be used
+    :type classes: dict
+    :param column: Column name to get the class code
+    :type column: str
     """
     failed = pd.DataFrame(columns=catalog.columns)
 
@@ -169,7 +188,8 @@ def get_fits_images(
                 class_code = ""
 
             if "filename" in catalog:
-                file_name = f"{save_dir}/{class_code}_{catalog['filename'][i]}.fits"
+                file_name = \
+                    f"{save_dir}/{class_code}_{catalog['filename'][i]}.fits"
             else:
                 file_name = f"{save_dir}/{class_code}_{name}.fits"
 
@@ -182,12 +202,15 @@ def get_fits_images(
 
 def fits_to_png(fits_path: str, im_size=None) -> Image.Image:
     """
-    Convert a FITS image to PNG
+    Convert a FITS image to PNG.
 
-    Arguments:
-        fits_path {str}: Path to the FITS image
-        png_path {str}: Path to the PNG image
-        im_size {tuple}: Size of the image
+    :param fits_path: Path to the FITS image
+    :type fits_path: str
+    :param im_size: Size of the image
+    :type im_size: tuple
+
+    :return: Image in PNG format
+    :rtype: Image.Image
     """
     try:
         img = fits.getdata(fits_path)
@@ -216,12 +239,14 @@ def fits_to_png(fits_path: str, im_size=None) -> Image.Image:
 
 def fits_to_png_batch(fits_dir: str, save_dir: str, im_size=None) -> None:
     """
-    Convert a batch of FITS images to PNG
+    Convert a batch of FITS images to PNG.
 
-    Arguments:
-        fits_dir {str}: Path to the FITS images directory
-        save_dir {str}: Path to the directory to save the PNG images
-        im_size {tuple}: Size of the image
+    :param fits_dir: Path to the directory containing the FITS images
+    :type fits_dir: str
+    :param save_dir: Path to the directory to save the PNG images
+    :type save_dir: str
+    :param im_size: Size of the image
+    :type im_size: tuple
     """
     for file in os.listdir(fits_dir):
         if file.endswith(".fits"):
@@ -238,26 +263,31 @@ def fits_to_png_batch(fits_dir: str, save_dir: str, im_size=None) -> None:
 
 def dataframe_to_html(catalog: pd.DataFrame, save_dir: str) -> None:
     """
-    Save the catalog as an HTML file
+    Save the catalog as an HTML file.
 
-    Arguments:
-        catalog {pd.DataFrame}: Catalog to save
-        save_dir {str}: Path to the directory to save the HTML file
+    :param catalog: Catalog of the astronomical objects
+    :type catalog: pd.DataFrame
+    :param save_dir: Path to the directory to save the HTML file
+    :type save_dir: str
     """
     Path(save_dir).mkdir(parents=True, exist_ok=True)
     catalog.to_html(os.path.join(save_dir, "catalog.html"))
 
 
-def mask_single_image(png_image: Image.Image, mask_image: Image.Image) -> Image.Image:
+def mask_single_image(
+    png_image: Image.Image,
+    mask_image: Image.Image
+) -> Image.Image:
     """
-    Mask a single image with the mask
+    Mask a single image with the mask.
 
-    Arguments:
-        png_file {str}: Path to the PNG image
-        mask_file {str}: Path to the mask image
+    :param png_image: Image in PIL format
+    :type png_image: Image.Image
+    :param mask_image: Mask image in PIL format
+    :type mask_image: Image.Image
 
-    Returns:
-        masked_image {PIL.Image}: Masked image
+    :return: Masked image in PIL format
+    :rtype: Image.Image
     """
     png_img = np.array(png_image)
     mask_img = np.array(mask_image)
@@ -270,12 +300,14 @@ def mask_single_image(png_image: Image.Image, mask_image: Image.Image) -> Image.
 
 def mask_images(png_dir: str, mask_dir: str, save_dir: str) -> None:
     """
-    Mask all the images in a directory with the mask
+    Mask all the images in a directory with the mask.
 
-    Arguments:
-        png_dir {str}: Path to the source images directory
-        mask_dir {str}: Path to the mask images directory
-        save_dir {str}: Path to the directory to save the masked images
+    :param png_dir: Path to the directory containing the images
+    :type png_dir: str
+    :param mask_dir: Path to the directory containing the masks
+    :type mask_dir: str
+    :param save_dir: Path to the directory to save the masked images
+    :type save_dir: str
     """
     for file in os.listdir(mask_dir):
         if file.endswith(".png"):
@@ -292,14 +324,13 @@ def mask_images(png_dir: str, mask_dir: str, save_dir: str) -> None:
 
 def get_mean_and_std(dataloader: torch.utils.data.DataLoader) -> tuple:
     """
-    Compute the mean and standard deviation of the dataset
+    Compute the mean and standard deviation of the dataset.
 
-    Arguments:
-        dataloader {torch.utils.data.DataLoader}: Dataloader of the dataset
+    :param dataloader: Dataloader of the dataset
+    :type dataloader: torch.utils.data.DataLoader
 
-    Returns:
-        mean {float}: Mean of the dataset
-        std {float}: Standard deviation of the dataset
+    :return: Mean and standard deviation of the dataset
+    :rtype: tuple
     """
     channels_sum, channels_squared_sum, num_batches = 0, 0, 0
     for data in dataloader:
@@ -319,9 +350,10 @@ def clear_folder(folder: str, extension: list) -> None:
     """
     Clear all files in a folder except the ones with the given extensions.
 
-    Arguments:
-        folder {str}: Path to the folder
-        extension {list}: List of extensions to keep
+    :param folder: Path to the folder to clear
+    :type folder: str
+    :param extension: List of extensions to keep
+    :type extension: list
     """
     for file in os.listdir(folder):
         if not file.endswith(tuple(extension)):
