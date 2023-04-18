@@ -1,0 +1,24 @@
+data_params:
+  classes:
+  - WAT
+  - NAT
+  data_path: ./data/bent_tail/
+  include_small: false
+  mean:
+  - 0.0032
+  std:
+  - 0.0376
+exp_params:
+  batch_size: 16
+  device: cuda
+  lr: 0.0003
+  num_epochs: 500
+  num_workers: 16
+  weight_decay: 1.0e-06
+logging_params:
+  results_dir: ./results/
+model_params:
+  N: 16
+  image_size: 151
+  kernel_size: 5
+  pretrained_model: ./results/models/byol/run_0/best.pt
