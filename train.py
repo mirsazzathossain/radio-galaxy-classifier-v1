@@ -81,6 +81,6 @@ if __name__ == "__main__":
             results_folder=configs["logging_params"]["results_dir"],
         )
         trainer.train(epochs=configs["exp_params"]["num_epochs"])
-        trainer.test()
+        trainer.test(trainer.model_out_dir + "/best.pt")
     else:
         raise ValueError("Invalid model name")

@@ -123,3 +123,45 @@ if __name__ == "__main__":
     print(f"Length of the dataset: {len(dataset)}")
     print(f"Data: {dataset[0][0].shape}")
     print(f"Target: {dataset[0][1]}")
+
+
+class AugmentedDataset(Dataset):
+    """
+    Augment the dataset.
+
+    :param dataset: dataset
+    :type dataset: torch.utils.data.Dataset
+    :param transform: transform
+    :type transform: transforms.Compose
+    """
+
+    def __init__(
+        self,
+        dataset: Dataset,
+        transform: transforms.Compose
+    ):
+        """Initialize the AugmentedDataset."""
+        self.dataset = dataset
+        self.transform = transform
+
+    def __getitem__(self, index: int):
+        """
+        Get item.
+
+        :param index: index
+        :type index: int
+
+        :return: image, label
+        :rtype: torch.Tensor, torch.Tensor
+        """
+        image, label = self.dataset[index]
+        return self.transform(image), label
+
+    def __len__(self):
+        """
+        Get length.
+
+        :return: length
+        :rtype: int
+        """
+        return len(self.dataset)

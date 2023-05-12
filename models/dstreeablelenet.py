@@ -53,6 +53,7 @@ class DSteerableLeNet(nn.Module):
         )
         self.relu1 = e2nn.ReLU(out_type, inplace=True)
         self.pool1 = e2nn.PointwiseMaxPoolAntialiased(out_type, kernel_size=2)
+        self.drop1 = e2nn.PointwiseDropout(out_type, p=0.5)
 
         in_type = self.pool1.out_type
         out_type = e2nn.FieldType(self.r2_act, 16 * [self.r2_act.regular_repr])
@@ -65,6 +66,7 @@ class DSteerableLeNet(nn.Module):
         )
         self.relu2 = e2nn.ReLU(out_type, inplace=True)
         self.pool2 = e2nn.PointwiseMaxPoolAntialiased(out_type, kernel_size=2)
+        self.drop2 = e2nn.PointwiseDropout(out_type, p=0.5)
 
         self.gpool = e2nn.GroupPooling(out_type)
 
@@ -85,10 +87,12 @@ class DSteerableLeNet(nn.Module):
         x = self.conv1(x)
         x = self.relu1(x)
         x = self.pool1(x)
+        x = self.drop1(x)
 
         x = self.conv2(x)
         x = self.relu2(x)
         x = self.pool2(x)
+        x = self.drop2(x)
 
         x = self.gpool(x)
         x = x.tensor

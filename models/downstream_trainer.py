@@ -18,12 +18,13 @@ import torch.nn.functional as F
 from matplotlib import pyplot as plt
 from sklearn.metrics import (accuracy_score, confusion_matrix,
                              precision_recall_fscore_support)
+from sklearn.model_selection import train_test_split
 from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
 from tqdm import tqdm
 
 from models.dstreeablelenet import DSteerableLeNet
-from utils.bent_tail_dataset import BentTailDataset
+from utils.bent_tail_dataset import AugmentedDataset, BentTailDataset
 
 
 class DownstreamNet(nn.Module):
@@ -172,7 +173,6 @@ class DownstreamTrainer:
             self.optimizer, factor=0.9, patience=2
         )
 
-        # set up loss function
         self.criterion = nn.NLLLoss().to(self.device)
 
         # set up data loader
@@ -219,11 +219,12 @@ class DownstreamTrainer:
         """
         self.initiate_writer()
         total_loss = 0
-        best_loss = 1e10
+        best_acc = 0
         correct = 0
         for epoch in range(epochs):
             self.model.train()
             total_loss = 0
+            correct = 0
             loop = tqdm(enumerate(self.train_loader),
                         total=len(self.train_loader), leave=False)
             for batch_idx, (data, target) in loop:
@@ -232,6 +233,17 @@ class DownstreamTrainer:
                 # forward pass
                 output = F.softmax(self.model(data), dim=1)
                 loss = self.criterion(torch.log(output), target)
+
+                # add l2 regularization
+                l2_reg = None
+                for W in self.model.parameters():
+                    if l2_reg is None:
+                        l2_reg = W.norm(2)
+                    else:
+                        l2_reg = l2_reg + W.norm(2)
+
+                loss += l2_reg * 0.1
+
                 total_loss += loss.item()
 
                 predicted = output.argmax(dim=1, keepdim=True)
@@ -259,13 +271,35 @@ class DownstreamTrainer:
             self.writer.add_scalar("Loss/train", total_loss, epoch)
             self.writer.add_scalar("Accuracy/train", accuracy, epoch)
 
-            # save model
+            # evaluate on test set
             self.model.eval()
+            test_loss = 0
+            correct = 0
+            with torch.no_grad():
+                for data, target in self.test_loader:
+                    data, target = data.to(self.device), target.to(self.device)
+                    output = F.softmax(self.model(data), dim=1)
+                    test_loss += self.criterion(
+                        torch.log(output), target
+                    ).item()
+                    predicted = output.argmax(dim=1, keepdim=True)
+                    correct += predicted.eq(target.view_as(predicted)
+                                            ).sum().item()
+
+            # calculate test loss and accuracy
+            test_loss /= len(self.test_loader.dataset)
+            accuracy = correct / len(self.test_loader.dataset)
+
+            # log test loss
+            self.writer.add_scalar("Loss/eval", test_loss, epoch)
+            self.writer.add_scalar("Accuracy/eval", accuracy, epoch)
+
+            # save model
             torch.save(self.model.state_dict(),
                        self.model_out_dir + "/last.pt")
 
-            if total_loss < best_loss:
-                best_loss = total_loss
+            if accuracy > best_acc:
+                best_acc = accuracy
                 torch.save(self.model.state_dict(),
                            self.model_out_dir + "/best.pt")
 
@@ -442,9 +476,18 @@ class DownstreamTrainer:
         )
 
         # split the dataset into train and test
-        train_dataset, test_dataset = torch.utils.data.random_split(
-            dataset,
-            [int(len(dataset)*0.8), len(dataset)-int(len(dataset)*0.8)]
+        train_dataset, test_dataset = train_test_split(
+            dataset, test_size=0.1, random_state=2171, stratify=dataset.targets
+        )
+
+        # augment the training dataset
+        train_dataset = AugmentedDataset(
+            train_dataset, transform=transforms.Compose([
+                transforms.RandomPerspective(
+                    distortion_scale=0.1, p=0.5, fill=0
+                ),
+                transforms.GaussianBlur(kernel_size=3),
+            ])
         )
 
         # set up data loader
